@@ -5,9 +5,9 @@ the outside using pytest.
 
 ## Quickstart
 
-Install poetry locally or globally:
+Install poetry locally or globally.
 
-#### Local
+Local:
 
 ```sh
 $ python3 -m venv env
@@ -15,7 +15,7 @@ $ source env/bin/activate
 $ pip install poetry
 ```
 
-#### Global
+Global:
 
 ```sh
 $ pip install --user poetry

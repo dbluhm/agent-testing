@@ -4,70 +4,146 @@ This example is intended to be run with the return_route_client to demonstrate
 return routing.
 """
 
+from datetime import datetime
 import hashlib
-import os
 from aiohttp import web
 from aries_staticagent import StaticConnection, Target, crypto
+from aries_staticagent.module import Module, route
 
 
-def main():
-    """Start a server with a static connection."""
-    their_vk, _ = crypto.create_keypair(seed=hashlib.sha256(b"client").digest())
-    conn = StaticConnection.from_seed(
-        hashlib.sha256(b"server").digest(), Target(their_vk=their_vk)
-    )
+class BaseAgent:
+    """Simple Agent class.
 
-    # @conn.route('https://didcomm.org/basicmessage/1.0/message')
-    # async def basic_message_auto_responder(msg, conn):
-    #     await conn.send_async({
-    #         "@type": "https://didcomm.org/"
-    #                  "basicmessage/1.0/message",
-    #         "~l10n": {"locale": "en"},
-    #         "sent_time": utils.timestamp(),
-    #         "content": "You said: {}".format(msg['content'])
-    #     })
+    Used to start up an agent with statically configured handlers.
+    """
 
-    async def handle(request):
-        """aiohttp handle POST."""
+    def __init__(self, host: str, port: int, connection: StaticConnection):
+        """Initialize BaseAgent."""
+        self.host = host
+        self.port = port
+        self.connection = connection
+        self._runner = None
+
+    async def handle_web_request(self, request: web.Request):
+        """Handle HTTP POST."""
         response = []
-        with conn.session(response.append) as session:
-            await conn.handle(await request.read(), session)
+        with self.connection.session(response.append) as session:
+            await self.connection.handle(await request.read(), session)
 
         if response:
             return web.Response(body=response.pop())
 
         raise web.HTTPAccepted()
 
-    # @conn.route("https://example.com/test_protocol/0.1/test")
-    # async def test_message(msg, conn):
-    #     print("Received test message from client", msg)
+    async def start_async(self):
+        """Start the agent listening for HTTP POSTs."""
+        app = web.Application()
+        app.add_routes([web.post("/", self.handle_web_request)])
+        self.runner = web.AppRunner(app)
+        await self.runner.setup()
+        site = web.TCPSite(self.runner, self.host, self.port)
+        await site.start()
 
-    strings_list = []  # create empty list to store arbitrary strings
-    # Add arbitrary strings from client to list
+    async def cleanup(self):
+        """Clean up async start."""
+        await self.runner.cleanup()
 
-    @conn.route("https://example.com/manage-list/0.1/add")
-    async def add_string(items, conn):
+    def start(self):
+        """Start sychronously."""
+        app = web.Application()
+        app.add_routes([web.post("/", self.handle_web_request)])
+
+        web.run_app(app, port=self.port)
+
+    def register_modules(self, *modules: Module):
+        """Register modules on connection."""
+        for module in modules:
+            self.connection.route_module(module)
+
+
+class BasicMessageCounter(Module):
+    """A simple BasicMessage module.
+    Responds with the number of messages received.
+    """
+
+    DOC_URI = "https://didcomm.org/"
+    PROTOCOL = "basicmessage"
+    VERSION = "1.0"
+
+    def __init__(self):
+        super().__init__()
+        self.count = 0
+
+    @route
+    async def message(self, _msg, conn):
+        """Respond to basic messages with a count of messages received."""
+        self.count += 1
+        await conn.send_async(
+            {
+                "@type": self.type("message"),
+                "~l10n": {"locale": "en"},
+                "sent_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "content": "{} message(s) received.".format(self.count),
+            }
+        )
+
+
+class ManageListProtocol(Module):
+    """List management protocol handlers."""
+
+    DOC_URI = "https://example.com/"
+    PROTOCOL = "manage-list"
+    VERSION = "0.1"
+
+    def __init__(self):
+        """Initialize ManageListProtocol and state."""
+        super().__init__()
+        self.strings_list = []  # create empty list to store arbitrary strings
+
+    @route("https://example.com/manage-list/0.1/add")
+    async def add_string(self, items, conn):
         item = items.get("item", "no item found")
-        strings_list.append(item)
+        self.strings_list.append(item)
 
     # Respond to client's request to send the list of strings
-    @conn.route("https://example.com/manage-list/0.1/get-list")
-    async def return_list(message, conn):
+    @route("https://example.com/manage-list/0.1/get-list")
+    async def return_list(self, message, conn):
         await conn.send_async(
-            {"@type": "https://example.com/manage-list/0.1/list", "item": strings_list}
+            {
+                "@type": "https://example.com/manage-list/0.1/list",
+                "item": self.strings_list,
+            }
         )
 
     # Delete string from the list
-    @conn.route("https://example.com/manage-list/0.1/delete")
-    async def delete_item(message, conn):
+    @route("https://example.com/manage-list/0.1/delete")
+    async def delete_item(self, message, conn):
         print("Deleting string of index", message["item"], "from the list.")
-        strings_list.remove(strings_list[message["item"]])
-        print("Updated list: ", strings_list)
+        self.strings_list.remove(self.strings_list[message["item"]])
+        print("Updated list: ", self.strings_list)
 
-    app = web.Application()
-    app.add_routes([web.post("/", handle)])
 
-    web.run_app(app, port=os.environ.get("PORT", 3000))
+class Agent(BaseAgent):
+    """Our cool agent that does list management protocol."""
+
+    HOST = "localhost"
+    PORT = 3000
+
+    def __init__(self):
+        their_vk, _ = crypto.create_keypair(seed=hashlib.sha256(b"client").digest())
+        conn = StaticConnection.from_seed(
+            hashlib.sha256(b"server").digest(), Target(their_vk=their_vk)
+        )
+        super().__init__(self.HOST, self.PORT, conn)
+        manage_list = ManageListProtocol()
+        basic_message = BasicMessageCounter()
+        self.register_modules(manage_list, basic_message)
+
+
+def main():
+    """Start our cool agent."""
+    agent = Agent()
+    agent.start()
 
 
 if __name__ == "__main__":

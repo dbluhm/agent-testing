@@ -118,9 +118,13 @@ class ManageListProtocol(Module):
     # Delete string from the list
     @route("https://example.com/manage-list/0.1/delete")
     async def delete_item(self, message, conn):
-        print("Deleting string of index", message["item"], "from the list.")
         self.strings_list.remove(self.strings_list[message["item"]])
-        print("Updated list: ", self.strings_list)
+        await conn.send_async(
+            {
+                "@type": "https://example.com/manage-list/0.1/deleted",
+                "content": self.strings_list,
+            }
+        )
 
 
 class Agent(BaseAgent):

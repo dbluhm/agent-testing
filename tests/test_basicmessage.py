@@ -1,6 +1,5 @@
 """Test the BasicMessage Handler in agent."""
 from datetime import datetime
-
 from aries_staticagent import StaticConnection
 import pytest
 

@@ -121,7 +121,7 @@ class ManageListProtocol(Module):
         self.strings_list.remove(self.strings_list[message["item"]])
         await conn.send_async(
             {
-                "@type": "https://example.com/manage-list/0.1/delete",
+                "@type": "https://example.com/manage-list/0.1/deleted",
                 "content": self.strings_list,
             }
         )

@@ -135,7 +135,7 @@ class MessageExchangeProtocol(Module):
     VERSION = "0.1"
 
     def __init__(self):
-        """Initialize ManageListProtocol and state."""
+        """Initialize MessageExchangeProtocol and state."""
         super().__init__()
 
     @route("https://example.com/message-exchange/0.1/message1")

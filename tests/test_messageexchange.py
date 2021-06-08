@@ -33,56 +33,25 @@ async def test_second_message(connection: StaticConnection):
     )
 
 
+responses = [
+    ("transparent", "This means that everyone can see that there was a transaction."),
+    (
+        "time stamped",
+        "This means that everyone can see when the " "transaction was made.",
+    ),
+    (
+        "immutable",
+        "This means that no one "
+        "can alter previous transactions or information on the ledger.",
+    ),
+]
+
+
 @pytest.mark.asyncio
-async def test_third_message(connection: StaticConnection):
-    # Response_options: 'transparent', 'time stamped', 'immutable'
-    choice = "immutable"
-    if choice.lower() == "transparent":
-        reply = await connection.send_and_await_reply_async(
-            {
-                "@type": "https://example.com/message-exchange/0.1/message3",
-                "item": choice,
-            },
-            return_route="all",
-        )
-        assert (
-            reply["content"]
-            == "This means that everyone can see that there was a transaction."
-        )
-    elif choice.lower() == "time stamped":
-        reply = await connection.send_and_await_reply_async(
-            {
-                "@type": "https://example.com/message-exchange/0.1/message3",
-                "item": choice,
-            },
-            return_route="all",
-        )
-        assert (
-            reply["content"]
-            == "This means that everyone can see when the transaction was made."
-        )
-    elif choice.lower() == "immutable":
-        reply = await connection.send_and_await_reply_async(
-            {
-                "@type": "https://example.com/message-exchange/0.1/message3",
-                "item": choice,
-            },
-            return_route="all",
-        )
-        assert (
-            reply["content"]
-            == "This means that no one can alter previous transactions "
-            "or information on the ledger."
-        )
-    else:
-        reply = await connection.send_and_await_reply_async(
-            {
-                "@type": "https://example.com/message-exchange/0.1/message3",
-                "item": choice,
-            },
-            return_route="all",
-        )
-        assert (
-            reply["content"] == "Sorry, we didn't understand your request! Please type "
-            "'transparent', 'time stamped', 'immutable' (not case sensitive)."
-        )
+@pytest.mark.parametrize("choice, response", responses)
+async def test_third_message(connection: StaticConnection, choice, response):
+    reply = await connection.send_and_await_reply_async(
+        {"@type": "https://example.com/message-exchange/0.1/message3", "item": choice},
+        return_route="all",
+    )
+    assert reply["content"] == response

@@ -168,34 +168,21 @@ class MessageExchangeProtocol(Module):
     @route("https://example.com/message-exchange/0.1/message3")
     async def third_message(self, msg, conn):
         """Send and receive third messages."""
-        if "transparent" == msg["item"].lower():
+        responses = {
+            "transparent": "This means that everyone can see that "
+            "there was a transaction.",
+            "time stamped": "This means that everyone can see when the transaction "
+            "was made.",
+            "immutable": "This means that no one can alter previous transactions "
+            "or information on the ledger.",
+        }
+        if msg["item"].lower() in responses.keys():
             await conn.send_async(
                 {
                     "@type": self.type("message"),
                     "~l10n": {"locale": "en"},
                     "sent_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "content": "This means that everyone can see that there "
-                    "was a transaction.",
-                }
-            )
-        elif "time stamped" == msg["item"].lower():
-            await conn.send_async(
-                {
-                    "@type": self.type("message"),
-                    "~l10n": {"locale": "en"},
-                    "sent_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "content": "This means that everyone can see when the "
-                    "transaction was made.",
-                }
-            )
-        elif "immutable" == msg["item"].lower():
-            await conn.send_async(
-                {
-                    "@type": self.type("message"),
-                    "~l10n": {"locale": "en"},
-                    "sent_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "content": "This means that no one can alter previous "
-                    "transactions or information on the ledger.",
+                    "content": responses[msg["item"].lower()],
                 }
             )
         else:

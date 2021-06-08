@@ -127,6 +127,77 @@ class ManageListProtocol(Module):
         )
 
 
+class MessageExchangeProtocol(Module):
+    """Message exchange protocol handlers"""
+
+    DOC_URI = "https://example.com/"  # okay to use the same one?
+    PROTOCOL = "message-exchange"
+    VERSION = "0.1"
+
+    def __init__(self):
+        """Initialize MessageExchangeProtocol and state."""
+        super().__init__()
+
+    @route("https://example.com/message-exchange/0.1/message1")
+    async def first_message(self, msg, conn):
+        """Send and receive initial messages."""
+        await conn.send_async(
+            {
+                "@type": self.type("message"),
+                "~l10n": {"locale": "en"},
+                "sent_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "content": "Blockchain is a type of database that stores "
+                "information in a decentralized, distributed digital ledger.",
+            }
+        )
+
+    @route("https://example.com/message-exchange/0.1/message2")
+    async def second_message(self, msg, conn):
+        """Send and receive second messages."""
+        await conn.send_async(
+            {
+                "@type": self.type("message"),
+                "~l10n": {"locale": "en"},
+                "sent_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "content": "Data is recorded in a way that is transparent, "
+                "time stamped, and immutable. (Type one of the previous "
+                "words to learn more.)",
+            }
+        )
+
+    @route("https://example.com/message-exchange/0.1/message3")
+    async def third_message(self, msg, conn):
+        """Send and receive third messages."""
+        responses = {
+            "transparent": "This means that everyone can see that "
+            "there was a transaction.",
+            "time stamped": "This means that everyone can see when the transaction "
+            "was made.",
+            "immutable": "This means that no one can alter previous transactions "
+            "or information on the ledger.",
+        }
+        if msg["item"].lower() in responses.keys():
+            await conn.send_async(
+                {
+                    "@type": self.type("message"),
+                    "~l10n": {"locale": "en"},
+                    "sent_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "content": responses[msg["item"].lower()],
+                }
+            )
+        else:
+            await conn.send_async(
+                {
+                    "@type": self.type("message"),
+                    "~l10n": {"locale": "en"},
+                    "sent_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "content": "Sorry, we didn't understand your request! "
+                    "Please type 'transparent', 'time stamped', 'immutable' "
+                    "(not case sensitive).",
+                }
+            )
+
+
 class Agent(BaseAgent):
     """Our cool agent that does list management protocol."""
 
@@ -141,7 +212,8 @@ class Agent(BaseAgent):
         super().__init__(self.HOST, self.PORT, conn)
         manage_list = ManageListProtocol()
         basic_message = BasicMessageCounter()
-        self.register_modules(manage_list, basic_message)
+        message_exchange = MessageExchangeProtocol()
+        self.register_modules(manage_list, basic_message, message_exchange)
 
 
 def main():

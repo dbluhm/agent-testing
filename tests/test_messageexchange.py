@@ -35,14 +35,39 @@ async def test_second_message(connection: StaticConnection):
 
 responses = [
     ("transparent", "This means that everyone can see that there was a transaction."),
+    ("Transparent", "This means that everyone can see that there was a transaction."),
     (
         "time stamped",
+        "This means that everyone can see when the " "transaction was made.",
+    ),
+    (
+        "TIME stamped",
         "This means that everyone can see when the " "transaction was made.",
     ),
     (
         "immutable",
         "This means that no one "
         "can alter previous transactions or information on the ledger.",
+    ),
+    (
+        "ImmutablE",
+        "This means that no one "
+        "can alter previous transactions or information on the ledger.",
+    ),
+    (
+        "Transparency",
+        "Sorry, we didn't understand your request! Please type 'transparent', "
+        "'time stamped', 'immutable' (not case sensitive).",
+    ),
+    (
+        "Imuttable",
+        "Sorry, we didn't understand your request! Please type 'transparent', "
+        "'time stamped', 'immutable' (not case sensitive).",
+    ),
+    (
+        "Decentralized",
+        "Sorry, we didn't understand your request! Please type 'transparent', "
+        "'time stamped', 'immutable' (not case sensitive).",
     ),
 ]
 

@@ -9,7 +9,6 @@ license = "Apache-2.0"
 python = "^3.6.9"
 pytest = "^6.2.4"
 aries-staticagent = "^0.8.0"
-fastapi = "^0.68.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.13.0"

@@ -2,51 +2,59 @@
 will be designed to add items to, delete items from, and retrieve a 
 given list of items. """
 
-# Start with importing the necessary libraries/files
-
-from fastapi import FastAPI  # Import FastAPI, the basis for this API.
+from fastapi import FastAPI  
 from pydantic import (
     BaseModel,
-)  # Import BaseModel, so that we can make a JSON-friendly item class.
+)  
 
+""" Turns FastAPI into a function that we can pull commands from."""
 app = (
     FastAPI()
-)  # Turns FastAPI into a function that we can pull commands from, like .post and .get.
+)  
 
 
-class Item(BaseModel):  # Here we make the item class (inherited from BaseModel)
-    name: str  # that this API will work with, given generic features
-    item_characteristics: str  # such as an item's name and characteristics.
+""" Make an item class for the API to work with."""
+class Item(BaseModel):  
+    name: str  
+    item_characteristics: str  
 
 
-list = {
-    1: {"name": "feature1", "parts": "cool stuff"}
-}  # A short list containing one item.
+""" Make a list of items to work with."""
+my_list = [
+    ["name", "components"]
+]  
 
 
 """Now we have a list to work with, let's make our necessary endpoints that work with it."""
 
-# New-item endpoint. This will allow the user to add a new item to the list.
-@app.post("/new-item/{item_id}")
-def new_item(item_id: int, item: Item):
-    if item_id in list:  # Checks if an item with the desired ID already exists.
-        return "That item already exists."  # If it does, the user is told so.
+""" Adds a new item to the list.
 
-    list[item_id] = item  # If the desired ID is not already in the list, a new
-    return list[item_id]  # item is made.
+This function allows the user to specify details of an item
+they would want added to the list, adds those items to the 
+list, and then returns the list's most recent addition. """
+@app.post("/new-item")
+def new_item(item: Item):
+    my_list.append(item)  
+    return my_list[-1]  
 
 
-# List-return endpoint. Returns the list and the items in it.
+""" Returns the list and the items in it."""
+
 @app.get("/get-list")
 def get_list():
-    return list
+    return my_list
 
 
-# Delete-item endpoint. Deletes a given item from a list.
+""" Deletes a given item from a list.
+
+This function deletes an item with the specified index from
+the list. If the item index is not in the list, the user is
+told so. If it does, the corresponding item is deleted from
+the list and the user is told so. """
 @app.delete("/delete/{index}")
-def delete_item(item_id: int):
-    if item_id not in list:  # Checks if the provided item ID is in the list.
-        return {"Error": "Item does not exist."}  # If not, the user is told so.
+def delete_item(item_num):
+    if item_num not in my_list:  
+        return {"Error": "Item does not exist."} 
 
-    del list[item_id]  # If the item ID is in the list, the item is deleted.
+    del my_list[item_num]  
     return {"Success": "Item deleted."}

@@ -25,7 +25,7 @@ class Item(BaseModel):
 
 
 my_list = [
-    ["name", "components"]
+    {"name": "item1", "components": "feature1"}
 ]
 
 
@@ -49,14 +49,14 @@ def new_item(item: Item):
 
 @app.get("/get-list")
 def get_list():
+
     """ Returns the list and the items in it.
     """
-
     return my_list
 
 
-@app.delete("/delete/{index}")
-def delete_item(item_num):
+@app.delete("/delete/")
+def delete_item(item_num: int):
 
     """ Deletes a given item from a list.
 
@@ -66,8 +66,8 @@ def delete_item(item_num):
     told so. If it does, the corresponding item is deleted from
     the list and the user is told so. 
     """
-    if item_num > len(my_list):
+    if int(item_num) > len(my_list):
         return {"Error": "Item does not exist."}
 
-    del my_list[item_num-1]
+    del my_list[int(item_num)-1]
     return {"Success": "Item deleted."}

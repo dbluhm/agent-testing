@@ -31,7 +31,7 @@ def main():
     def delete_item():
         """Deletes an item from the given list"""
 
-        item_del = input("What is the Item Number of item you" "want to delete? : ")
+        item_del = input("What is the Item Number of item you want to delete? : ")
         return item_del
 
     """Here we ask the client what they want to do."""

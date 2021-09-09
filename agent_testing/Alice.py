@@ -24,7 +24,7 @@ def main():
     # Make handlers for our three message types.
 
     # This handler will deal with the "add" message type.
-    @conn.route("https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1//add")
+    @conn.route("https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/add")
     async def add_message_responder(msg, conn):
 
         new_item = {
@@ -33,17 +33,13 @@ def main():
         }
 
         my_list.append(new_item)
-        response = {
-            "Success!": "Item successfully added to list. "
-            "Item number = " + str(my_list.index(new_item) + 1) + "."
-        }
+        response = "true"
 
         await conn.send_async(
             {
-                "@type": "https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/add",
-                "~l10n": {"locale": "en"},
-                "sent_time": utils.timestamp(),
-                "content": "{}".format(response),
+                "@type": "https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/result",
+                "index": str(my_list.index(new_item) + 1),
+                "success": "{}".format(response),
             }
         )
 
@@ -54,9 +50,8 @@ def main():
 
         await conn.send_async(
             {
-                "@type": "https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/get",
-                "~l10n": {"locale": "en"},
-                "sent_time": utils.timestamp(),
+                "@type": "https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/list",
+                "length": str(len(my_list)),
                 "content": "{}".format(my_list),
             }
         )
@@ -69,7 +64,7 @@ def main():
 
         del my_list[int(item) - 1]
 
-        response = {"Success!": "Item number " + str(item) + " deleted!"}
+        response = "true"
         return response
 
     @conn.route("https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/delete")
@@ -79,10 +74,9 @@ def main():
 
         await conn.send_async(
             {
-                "@type": "https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/delete",
-                "~l10n": {"locale": "en"},
-                "sent_time": utils.timestamp(),
-                "content": "{}".format(response),
+                "@type": "https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/result",
+                "deleted": msg["content"],
+                "success": "{}".format(response),
             }
         )
 

@@ -8,16 +8,6 @@ import hashlib
 import os
 from aries_staticagent import StaticConnection, Target, crypto, utils
 
-"""
-from pydantic import (
-    BaseModel,
-)
-
-class Item(BaseModel):
-    name: str
-    item_characteristics: str
-"""
-
 
 def main():
     """Send a message and await the reply."""
@@ -62,7 +52,7 @@ def main():
 
     reply = conn.send_and_await_returned(
         {
-            "@type": "https://didcomm.org/basicmessage/1.0/" + qualifier,
+            "@type": "https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/" + qualifier,
             "~l10n": {"locale": "en"},
             "sent_time": utils.timestamp(),
             "content": request,

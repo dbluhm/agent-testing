@@ -21,19 +21,10 @@ def main():
 
     my_list = [{"name": "item1", "features": "feature1"}]
 
-    def delete_item(item):
-        # Deletes an item from the given list
+    # Make handlers for our three message types.
 
-        del my_list[int(item) - 1]
-
-        response = {"Success!": "Item number " + str(item) + " deleted!"}
-        return response
-
-    """Make handlers for our three message types."""
-
-    @conn.route("https://didcomm.org/basicmessage/1.0/add")
     # This handler will deal with the "add" message type.
-
+    @conn.route("https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1//add")
     async def add_message_responder(msg, conn):
 
         new_item = {
@@ -49,37 +40,46 @@ def main():
 
         await conn.send_async(
             {
-                "@type": "https://didcomm.org/basicmessage/1.0/add",
+                "@type": "https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/add",
                 "~l10n": {"locale": "en"},
                 "sent_time": utils.timestamp(),
                 "content": "{}".format(response),
             }
         )
 
-    @conn.route("https://didcomm.org/basicmessage/1.0/get")
+    
     # This handler will deal with the "get" message type.
-
+    @conn.route("https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/get")
     async def get_message_responder(msg, conn):
 
         await conn.send_async(
             {
-                "@type": "https://didcomm.org/basicmessage/1.0/get",
+                "@type": "https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/get",
                 "~l10n": {"locale": "en"},
                 "sent_time": utils.timestamp(),
                 "content": "{}".format(my_list),
             }
         )
 
-    @conn.route("https://didcomm.org/basicmessage/1.0/delete")
+    
     # This handler will deal with the "delete" message type.
+    
+    def delete_item(item):
+        # Deletes an item from the given list
 
+        del my_list[int(item) - 1]
+
+        response = {"Success!": "Item number " + str(item) + " deleted!"}
+        return response
+
+    @conn.route("https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/delete")
     async def delete_message_responder(msg, conn):
 
         response = delete_item(msg["content"])
 
         await conn.send_async(
             {
-                "@type": "https://didcomm.org/basicmessage/1.0/get",
+                "@type": "https://github.com/dbluhm/agent-testing/tree/main/docs/list/0.1/delete",
                 "~l10n": {"locale": "en"},
                 "sent_time": utils.timestamp(),
                 "content": "{}".format(response),

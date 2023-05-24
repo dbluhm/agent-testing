@@ -1,7 +1,10 @@
-# Agent Testing Demonstration
+# Agent Testing Demonstration (Archived)
 
 This repository demonstrates testing an agent by exercising its protocols from
 the outside using pytest.
+
+This project was used as an exercise to get familiar with the concept of agents.
+No further development is planned and this project is archived.
 
 ## Quickstart
 
